@@ -1,5 +1,11 @@
 package types
 
+import (
+	"fmt"
+	_ "github.com/jmoiron/sqlx"
+	"time"
+)
+
 type LogLevel string
 
 const (
@@ -9,6 +15,16 @@ const (
 	Error = "ERR"
 	Fatal = "FTL"
 )
+
+type Log struct {
+	CreatedAt time.Time `db:"created_at"`
+	Level     LogLevel  `db:"log_level"`
+	Message   string    `db:"message"`
+}
+
+func (l *Log) String() string {
+	return fmt.Sprintf("%v %s %s", l.CreatedAt, l.Level, l.Message)
+}
 
 type ApiResponse struct {
 	Data    []BackOrder `json:"data"`
