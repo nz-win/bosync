@@ -13,3 +13,9 @@ func CheckAndLogFatal(err error) {
 		log.Fatalln(err)
 	}
 }
+
+func CheckAndLog(err error) {
+	if err != nil {
+		log.Println(err)
+	}
+}

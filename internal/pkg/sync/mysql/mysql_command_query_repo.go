@@ -49,7 +49,7 @@ func (cq *CommandQueryRepository) UpdateBackOrders(records []types.BackOrder) er
 		_, err = stmt.Exec(b.BusinessAreaNo, b.AreaNo, b.AdmNo, b.SalesDoc, b.SoldToParty, b.Material, b.SalesDate.Date, b.MatAvailDate.Date, b.BackorderQty)
 
 		if err != nil {
-			log.Printf("Failed to insert backorder record: \n %x", b)
+			log.Printf("Failed to insert backorder record: \n %v", b)
 		}
 	}
 

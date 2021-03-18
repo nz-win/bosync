@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"backorder_updater/internal/pkg"
 	"backorder_updater/internal/pkg/sync/sqlite"
 	"backorder_updater/internal/pkg/types"
 	"fmt"
@@ -18,8 +19,9 @@ func NewSqliteLogger(cqr *sqlite.CommandQueryRepository) *SqliteLogger {
 	return &SqliteLogger{cqr: cqr}
 }
 
-func (l *SqliteLogger) Log(m interface{}, level types.LogLevel) error {
-	return l.cqr.InsertLog(m, level)
+func (l *SqliteLogger) Log(m interface{}, level types.LogLevel) {
+	err := l.cqr.InsertLog(m, level)
+	pkg.CheckAndLogFatal(err)
 }
 
 func (l *SqliteLogger) LogAndNotify(level types.LogLevel, notification string, m interface{}) error {
@@ -61,11 +63,7 @@ func (l *SqliteLogger) LogAndNotify(level types.LogLevel, notification string, m
 
 	//d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	err = l.Log(m, level)
-
-	if err != nil {
-		return err
-	}
+	l.Log(m, level)
 
 	return d.DialAndSend(msg)
 

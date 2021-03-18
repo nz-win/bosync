@@ -109,7 +109,7 @@ func (cq *CommandQueryRepository) InsertLog(l interface{}, level types.LogLevel)
 		pkg.CheckAndLogFatal(stmt.Close())
 	}()
 
-	_, err = stmt.Exec(level, fmt.Sprintf("%x", l))
+	_, err = stmt.Exec(level, fmt.Sprintf("%v", l))
 	if err != nil {
 		return err
 	}

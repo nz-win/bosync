@@ -21,12 +21,12 @@ var dotEnvDefault string
 var sqliteInitSql string
 
 func main() {
-	if os.Getenv("BOSYNC_ENV") != "DEVELOPMENT" {
+	if os.Getenv("BOSYNC_ENVIRONMENT") != "DEVELOPMENT" {
 		logfile, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		pkg.CheckAndLogFatal(err)
 		log.SetOutput(logfile)
 		defer func() {
-			pkg.CheckAndLogFatal(logfile.Close())
+			pkg.CheckAndLog(logfile.Close())
 		}()
 	}
 

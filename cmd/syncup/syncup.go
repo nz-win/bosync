@@ -18,7 +18,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 )
 
 func Run(sqliteCqr *sqlite.CommandQueryRepository, mysqlCqr *mysql.CommandQueryRepository, logger *logging.SqliteLogger) {
@@ -51,22 +50,30 @@ func Run(sqliteCqr *sqlite.CommandQueryRepository, mysqlCqr *mysql.CommandQueryR
 		if errors.Is(err, sql.ErrNoRows) {
 			isNewData = true
 		} else {
-			pkg.CheckAndPanic(err)
+			logger.Log(err, types.Error)
 		}
 	}
 
-	isNewData = strings.Compare(currentHash, previousHash) != 0
+	isNewData = currentHash == previousHash
 
 	err = json.Unmarshal(bodyBytes, &response)
 	pkg.CheckAndPanic(err)
 
 	if isNewData {
+		logger.Log("New Data Detected. Updating Records", types.Info)
 		if err = mysqlCqr.UpdateBackOrders(response.Data); err != nil {
-			logErr := sqliteCqr.InsertLog(err, types.Fatal)
-			log.Println(logErr)
-			log.Fatal(err)
+			err = logger.LogAndNotify(types.Fatal, "An Error occurred inserting new back order records", err)
+
+			if err != nil {
+				log.Println(err)
+			}
+
+			return
+
 		}
 		sqliteCqr.RecordNewDataLoad(currentHash)
+	} else {
+		logger.Log("No New Data Available. No Records Updated.", types.Info)
 	}
 
 }
