@@ -4,6 +4,7 @@ import (
 	"backorder_updater/internal/pkg"
 	"backorder_updater/internal/pkg/sync/sqlite"
 	"backorder_updater/internal/pkg/types"
+	"crypto/tls"
 	"fmt"
 	"gopkg.in/gomail.v2"
 	"log"
@@ -61,7 +62,7 @@ func (l *SqliteLogger) LogAndNotify(level types.LogLevel, notification string, m
 
 	msg.SetBody("text/plain", fmt.Sprintf("%s\nDetails:\n%v", notification, m))
 
-	//d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	l.Log(m, level)
 
