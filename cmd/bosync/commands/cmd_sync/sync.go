@@ -48,14 +48,19 @@ func buildAction(appCtx *internal.AppContext) func(ctx *cli.Context) error {
 		response, currentHash, err := getApiData(appCtx)
 
 		if err != nil {
-			panic(err)
+			appCtx.RichLogger.Log(fmt.Sprintf("unable to retrieve api data: %v", err), types.Error)
+			if c.Bool("verbose") {
+				fmt.Println("")
+				fmt.Println(colors.Bold(colors.Red("✗ Data Sync Failed")))
+			}
+			return err
 		}
 
 		if c.Bool("verbose") {
 			s.Stop()
 		}
 
-		dataIsFresh, err := isDataFresh(appCtx, *currentHash)
+		dataIsFresh, err := isDataFresh(appCtx, currentHash)
 		if err != nil {
 			appCtx.RichLogger.Log(err, types.Error)
 		}
@@ -95,7 +100,7 @@ func buildAction(appCtx *internal.AppContext) func(ctx *cli.Context) error {
 			if c.Bool("verbose") {
 				fmt.Println(colors.Cyan("✎ Recording Data Hash"))
 			}
-			appCtx.SqliteCQR.RecordNewDataLoad(*currentHash)
+			appCtx.SqliteCQR.RecordNewDataLoad(currentHash)
 		}
 
 		if c.Bool("verbose") {
@@ -119,22 +124,22 @@ func isDataFresh(ctx *internal.AppContext, currentHash string) (bool, error) {
 	return currentHash == lastSeenHash, nil
 }
 
-func getApiData(ctx *internal.AppContext) (*types.ApiResponse, *string, error) {
+func getApiData(ctx *internal.AppContext) (*types.ApiResponse, string, error) {
 
 	endpoint, isSet := os.LookupEnv("BOSYNC_API_ENDPOINT_URL")
 
 	if isSet == false || endpoint == "" {
-		return nil, nil, errors.New("BOSYNC_API_ENDPOINT_URL env var is not set")
+		return nil, "", errors.New("BOSYNC_API_ENDPOINT_URL env var is not set")
 	}
 
 	resp, err := http.Get(endpoint)
 
 	if err != nil {
-		err = ctx.RichLogger.LogAndNotify(types.Fatal,
+		_ = ctx.RichLogger.LogAndNotify(types.Fatal,
 			fmt.Sprintf("Unable to connect to API @ %s",
 				os.Getenv("BOSYNC_API_ENDPOINT_URL")),
 			err)
-		return nil, nil, err
+		return nil, "", err
 	}
 	defer func() {
 		pkg.CheckAndLogFatal(resp.Body.Close())
@@ -148,6 +153,6 @@ func getApiData(ctx *internal.AppContext) (*types.ApiResponse, *string, error) {
 	err = json.Unmarshal(bodyBytes, &response)
 	pkg.CheckAndPanic(err)
 
-	return response, &currentHash, nil
+	return response, currentHash, nil
 
 }
