@@ -1,12 +1,13 @@
-package sqlite
+package sync
 
 import (
+	"backorder_updater/internal/pkg/sync/sqlite"
 	"database/sql"
 	_ "embed"
 	"os"
 )
 
-func Initialise(initSql string) (*CommandQueryRepository, error) {
+func Initialise(initSql string) (*sqlite.CommandQueryRepository, error) {
 	db, err := getDefaultConn()
 
 	if err != nil {
@@ -19,7 +20,7 @@ func Initialise(initSql string) (*CommandQueryRepository, error) {
 		return nil, err
 	}
 
-	return &CommandQueryRepository{conn: db}, nil
+	return sqlite.NewCommandQueryRepository(db), nil
 }
 
 func getDefaultConn() (*sql.DB, error) {

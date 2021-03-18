@@ -1,9 +1,11 @@
-package main
+package syncup
 
 import (
-	"backorder_updater/cmd/syncup/internal"
 	"backorder_updater/internal/pkg"
-	"backorder_updater/internal/pkg/sqlite"
+	"backorder_updater/internal/pkg/logging"
+	"backorder_updater/internal/pkg/sync/mysql"
+	"backorder_updater/internal/pkg/sync/sqlite"
+	"backorder_updater/internal/pkg/types"
 	"crypto/sha256"
 	"database/sql"
 	_ "embed"
@@ -19,50 +21,23 @@ import (
 	"strings"
 )
 
-//go:embed .env_defaults
-//goland:noinspection GoUnusedGlobalVariable
-var dotEnvDefault string
-
-//go:embed sqlite_init.sql
-//goland:noinspection GoUnusedGlobalVariable
-var sqliteInitSql string
-
-func main() {
+func Run(sqliteCqr *sqlite.CommandQueryRepository, mysqlCqr *mysql.CommandQueryRepository, logger *logging.SqliteLogger) {
 	var previousHash = ""
 	var currentHash = ""
 	var isNewData = false
-	var response = internal.ApiResponse{}
-
-	if os.Getenv("BOSYNC_ENV") != "DEVELOPMENT" {
-		logfile, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-		pkg.CheckAndLogFatal(err)
-		log.SetOutput(logfile)
-		defer func() {
-			pkg.CheckAndLogFatal(logfile.Close())
-		}()
-	}
-
-	envRoot, err := os.Getwd()
-	pkg.CheckAndPanic(err)
-
-	err = pkg.LoadEnv(envRoot, ".env")
-	pkg.CheckAndPanic(err)
-
-	sqliteCqr, err := sqlite.Initialise(sqliteInitSql)
-
-	defer func() {
-		pkg.CheckAndLogFatal(sqliteCqr.Close())
-	}()
-
-	mysql, err := sql.Open("mysql", os.Getenv("BOSYNC_MYSQL_CONN_STR"))
-	pkg.CheckAndPanic(err)
-	defer func() {
-		pkg.CheckAndLogFatal(mysql.Close())
-	}()
+	var response = types.ApiResponse{}
 
 	resp, err := http.Get(os.Getenv("BOSYNC_API_ENDPOINT_URL"))
-	pkg.CheckAndPanic(err)
 
+	if err != nil {
+		err = logger.LogAndNotify(types.Fatal,
+			fmt.Sprintf("Unable to connect to API @ %s",
+				os.Getenv("BOSYNC_API_ENDPOINT_URL")),
+			err)
+		return
+	}
+
+	pkg.CheckAndPanic(err)
 	defer func() {
 		pkg.CheckAndLogFatal(resp.Body.Close())
 	}()
@@ -80,15 +55,17 @@ func main() {
 		}
 	}
 
-	if strings.Compare(currentHash, previousHash) != 0 {
-		isNewData = true
-	}
+	isNewData = strings.Compare(currentHash, previousHash) != 0
 
 	err = json.Unmarshal(bodyBytes, &response)
 	pkg.CheckAndPanic(err)
 
 	if isNewData {
-		internal.UpdateMysql(mysql, response.Data)
+		if err = mysqlCqr.UpdateBackOrders(response.Data); err != nil {
+			logErr := sqliteCqr.InsertLog(err, types.Fatal)
+			log.Println(logErr)
+			log.Fatal(err)
+		}
 		sqliteCqr.RecordNewDataLoad(currentHash)
 	}
 

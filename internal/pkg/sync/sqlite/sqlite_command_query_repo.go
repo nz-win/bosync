@@ -2,13 +2,19 @@ package sqlite
 
 import (
 	"backorder_updater/internal/pkg"
+	"backorder_updater/internal/pkg/types"
 	"database/sql"
 	"errors"
+	"fmt"
 	sqlite "github.com/mattn/go-sqlite3"
 )
 
 type CommandQueryRepository struct {
 	conn *sql.DB
+}
+
+func NewCommandQueryRepository(conn *sql.DB) *CommandQueryRepository {
+	return &CommandQueryRepository{conn: conn}
 }
 
 type RecordDataLoadResult struct {
@@ -81,4 +87,33 @@ func (cq *CommandQueryRepository) getSql(queryName string) (string, error) {
 	}
 
 	return sqlQuery, nil
+}
+
+func (cq *CommandQueryRepository) InsertLog(l interface{}, level types.LogLevel) error {
+	query, err := cq.getSql("INSERT_LOG")
+
+	if err != nil {
+		return err
+	}
+
+	tx, err := cq.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		pkg.CheckAndLogFatal(stmt.Close())
+	}()
+
+	_, err = stmt.Exec(level, fmt.Sprintf("%x", l))
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+
 }

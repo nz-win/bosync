@@ -20,9 +20,15 @@ CREATE TABLE IF NOT EXISTS logs (
     message TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS properties (
+    id TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
 INSERT INTO queries (query_name, query)
     VALUES
         ('RECORD_NEW_DATALOAD',         'INSERT INTO dataloads (data_load_sha256) VALUES (?) ON CONFLICT (data_load_sha256) DO UPDATE SET last_seen_at = CURRENT_TIMESTAMP'),
+        ('INSERT_LOG',                         'INSERT INTO logs (log_level,message) VALUES (?,?)'),
         ('RETRIEVE_LAST_DATALOAD_HASH', 'SELECT data_load_sha256 FROM dataloads ORDER BY created_at DESC LIMIT 1;')
     ON CONFLICT (query_name) DO UPDATE SET query = excluded.query;
 
@@ -34,4 +40,6 @@ INSERT INTO log_levels VALUES
     ('ERR','Non Fatal Error'),
     ('FTL','Fatal Error')
 ON CONFLICT DO NOTHING;
+
+-- INSERT INTO properties (id, value) VALUES ('LAST_EXECUTED_AT',CURRENT_TIMESTAMP) ON CONFLICT DO UPDATE SET value=excluded.value;
 

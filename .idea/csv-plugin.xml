@@ -59,6 +59,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\internal\pkg\sync\mysql_command_query_repo.go">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\types.go">
           <value>
             <Attribute>
