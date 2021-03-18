@@ -61,17 +61,17 @@ func buildContext() *internal.AppContext {
 }
 
 func setupEnv() {
-	if os.Getenv("BOSYNC_ENVIRONMENT") != "DEVELOPMENT" {
-		logfile, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-		pkg.CheckAndLogFatal(err)
-		log.SetOutput(logfile)
-		defer func() {
-			pkg.CheckAndLog(logfile.Close())
-		}()
+	homeRoot, homeIsSet := os.LookupEnv("BOSYNC_HOME")
+
+	if homeIsSet {
+		err := pkg.LoadEnv(homeRoot, ".env")
+		pkg.CheckAndPanic(err)
+	} else {
+		envRoot, err := os.Getwd()
+		pkg.CheckAndPanic(err)
+
+		err = pkg.LoadEnv(envRoot, ".env")
+		pkg.CheckAndPanic(err)
 	}
 
-	envRoot, err := os.Getwd()
-	pkg.CheckAndPanic(err)
-	err = pkg.LoadEnv(envRoot, ".env")
-	pkg.CheckAndPanic(err)
 }

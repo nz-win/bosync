@@ -31,6 +31,12 @@ func NewCommand(ctx *internal.AppContext) *cli.Command {
 				Value:       false,
 				DefaultText: "false",
 			},
+			&cli.StringFlag{
+				Name:        "env",
+				Usage:       "set the search root for .env file",
+				Value:       "",
+				DefaultText: "Current Directory",
+			},
 		},
 	}
 }
