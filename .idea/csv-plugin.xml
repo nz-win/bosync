@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\cmd\bosync\commands\sync\sync.go">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\cmd\syncup\internal\pkg\sync.go">
           <value>
             <Attribute>

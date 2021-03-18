@@ -1,6 +1,7 @@
-package commands
+package cmd_log
 
 import (
+	"backorder_updater/cmd/bosync/internal"
 	"backorder_updater/internal/pkg/types"
 	"errors"
 	"fmt"
@@ -10,25 +11,28 @@ import (
 	"os"
 )
 
-var LogsCommand = &cli.Command{
-	Name:   "logs",
-	Usage:  "show logs",
-	Action: showLogs,
+func NewCommand(ctx *internal.AppContext) *cli.Command {
+	return &cli.Command{
+		Name:   "logs",
+		Usage:  "show logs",
+		Action: buildAction(ctx),
+	}
 }
 
-func showLogs(c *cli.Context) error {
-	var logs []*types.Log
+func buildAction(appCtx *internal.AppContext) func(ctx *cli.Context) error {
+	return func(c *cli.Context) error {
+		var logs []*types.Log
+		if success := tryOpenLogs(&logs); success == false {
+			return errors.New("failed to open logs")
+		}
 
-	if success := tryOpenLogs(&logs); success == false {
-		return errors.New("failed to open logs")
+		//goland:noinspection GoNilness
+		for _, log := range logs {
+			fmt.Println(log.String())
+		}
+
+		return nil
 	}
-
-	//goland:noinspection GoNilness
-	for _, log := range logs {
-		fmt.Println(log.String())
-	}
-
-	return nil
 }
 
 func tryOpenLogs(out *[]*types.Log) bool {

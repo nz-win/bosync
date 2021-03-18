@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/cmd/bosync/commands/logs.go" dialect="SQLite" />
-    <file url="file://$PROJECT_DIR$/cmd/syncup/internal/sync.go" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/cmd/bosync/commands/cmd_log/logs.go" dialect="SQLite" />
+    <file url="file://$PROJECT_DIR$/cmd/bosync/resources/sqlite_init.sql" dialect="SQLite" />
     <file url="file://$PROJECT_DIR$/cmd/syncup/syncup.go" dialect="SQLite" />
     <file url="file://$PROJECT_DIR$/internal/pkg/sync/mysql/mysql_command_query_repo.go" dialect="SQLite" />
     <file url="file://$PROJECT_DIR$/internal/pkg/sync/sqlite/sqlite_command_query_repo.go" dialect="SQLite" />
-    <file url="file://$PROJECT_DIR$/sqlite_init.sql" dialect="SQLite" />
   </component>
   <component name="SqlResolveMappings">
     <file url="file://$PROJECT_DIR$/internal/pkg/sync/mysql/mysql_command_query_repo.go" scope="{&quot;node&quot;:{  &quot;@negative&quot;:&quot;1&quot;,  &quot;group&quot;:{   &quot;@kind&quot;:&quot;root&quot;,   &quot;node&quot;:{    &quot;name&quot;:{     &quot;@qname&quot;:&quot;e8c09f93-4d34-4e26-b824-ad387f8ae322&quot;    },    &quot;group&quot;:{     &quot;@kind&quot;:&quot;schema&quot;,     &quot;node&quot;:{      &quot;name&quot;:{       &quot;@qname&quot;:&quot;win_main&quot;      }     }    }   }  } }}" />
