@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backorder_updater/cmd/bosync/commands/cmd_info"
 	"backorder_updater/cmd/bosync/commands/cmd_log"
 	"backorder_updater/cmd/bosync/commands/cmd_sync"
 	"backorder_updater/cmd/bosync/internal"
@@ -32,6 +33,7 @@ func main() {
 		Commands: []*cli.Command{
 			cmd_log.NewCommand(ctx),
 			cmd_sync.NewCommand(ctx),
+			cmd_info.NewCommand(ctx),
 		},
 	}
 
