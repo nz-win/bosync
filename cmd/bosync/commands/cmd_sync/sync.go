@@ -34,8 +34,8 @@ func NewCommand(ctx *internal.AppContext) *cli.Command {
 			&cli.BoolFlag{
 				Name:        "skip-stale",
 				Usage:       "set whether stale data loads should be skipped",
-				Value:       false,
-				DefaultText: "false",
+				Value:       true,
+				DefaultText: "true (wont attempt to reload from stale data)",
 			},
 		},
 	}
