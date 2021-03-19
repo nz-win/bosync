@@ -26,16 +26,12 @@ func NewCommand(ctx *internal.AppContext) *cli.Command {
 		Action: buildAction(ctx),
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:        "verbose",
-				Usage:       "show verbose logs on stdout",
-				Value:       false,
-				DefaultText: "false",
+				Name:  "verbose",
+				Usage: "show verbose logs on stdout",
 			},
 			&cli.BoolFlag{
-				Name:        "skip-stale",
-				Usage:       "set whether stale data loads should be skipped",
-				Value:       true,
-				DefaultText: "true (wont attempt to reload from stale data)",
+				Name:  "reload-stale",
+				Usage: "disables checksum to force reloading of unmodified (stale) data.",
 			},
 		},
 	}
@@ -71,19 +67,22 @@ func buildAction(appCtx *internal.AppContext) func(ctx *cli.Context) error {
 			appCtx.RichLogger.Log(err, types.Error)
 		}
 
-		dataIsFresh = dataIsFresh || !c.Bool("skip-stale")
-
 		if c.Bool("verbose") {
-			switch dataIsFresh {
-			case true:
-				fmt.Println(colors.Bold(colors.Green("✓ Fresh Data Available")))
-			default:
-				fmt.Println(colors.Yellow("✗ No Fresh Data Available"))
+			if c.Bool("reload-stale") {
+				fmt.Println(colors.Bold(colors.Yellow("ℹ data load checksums disabled. loading data whether it's fresh or not.")))
+			} else {
+
+				switch dataIsFresh {
+				case true:
+					fmt.Println(colors.Bold(colors.Green("✓ Fresh Data Available")))
+				default:
+					fmt.Println(colors.Yellow("✗ No Fresh Data Available"))
+				}
 			}
 
 		}
 
-		if dataIsFresh {
+		if dataIsFresh || c.Bool("reload-stale") {
 			s = spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 			s.Suffix = " Updating MySql Records"
 
