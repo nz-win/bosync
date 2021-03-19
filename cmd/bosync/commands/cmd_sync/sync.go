@@ -31,11 +31,11 @@ func NewCommand(ctx *internal.AppContext) *cli.Command {
 				Value:       false,
 				DefaultText: "false",
 			},
-			&cli.StringFlag{
-				Name:        "env",
-				Usage:       "set the search root for .env file",
-				Value:       "",
-				DefaultText: "Current Directory",
+			&cli.BoolFlag{
+				Name:        "skip-stale",
+				Usage:       "set whether stale data loads should be skipped",
+				Value:       false,
+				DefaultText: "false",
 			},
 		},
 	}
@@ -70,6 +70,8 @@ func buildAction(appCtx *internal.AppContext) func(ctx *cli.Context) error {
 		if err != nil {
 			appCtx.RichLogger.Log(err, types.Error)
 		}
+
+		dataIsFresh = dataIsFresh || !c.Bool("skip-stale")
 
 		if c.Bool("verbose") {
 			switch dataIsFresh {
