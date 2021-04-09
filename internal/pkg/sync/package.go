@@ -2,8 +2,8 @@ package sync
 
 import (
 	"backorder_updater/internal/pkg/sync/sqlite"
-	"database/sql"
 	_ "embed"
+	"github.com/jmoiron/sqlx"
 	"os"
 )
 
@@ -23,7 +23,7 @@ func Initialise(initSql string) (*sqlite.CommandQueryRepository, error) {
 	return sqlite.NewCommandQueryRepository(db), nil
 }
 
-func getDefaultConn() (*sql.DB, error) {
-	conn, err := sql.Open("sqlite3", os.Getenv("BOSYNC_SQLITE_DB_PATH"))
+func getDefaultConn() (*sqlx.DB, error) {
+	conn, err := sqlx.Open("sqlite3", os.Getenv("BOSYNC_SQLITE_DB_PATH"))
 	return conn, err
 }

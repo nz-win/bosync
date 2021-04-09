@@ -1,23 +1,24 @@
 package syncup
 
 import (
-	"backorder_updater/internal/pkg"
-	"backorder_updater/internal/pkg/logging"
-	"backorder_updater/internal/pkg/sync/mysql"
-	"backorder_updater/internal/pkg/sync/sqlite"
-	"backorder_updater/internal/pkg/types"
 	"crypto/sha256"
 	"database/sql"
 	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/mattn/go-sqlite3"
 	"io"
 	"log"
 	"net/http"
 	"os"
+
+	"backorder_updater/internal/pkg"
+	"backorder_updater/internal/pkg/logging"
+	"backorder_updater/internal/pkg/sync/mysql"
+	"backorder_updater/internal/pkg/sync/sqlite"
+	"backorder_updater/internal/pkg/types"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func Run(sqliteCqr *sqlite.CommandQueryRepository, mysqlCqr *mysql.CommandQueryRepository, logger *logging.SqliteLogger) {

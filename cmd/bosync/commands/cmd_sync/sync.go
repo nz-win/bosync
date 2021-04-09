@@ -132,7 +132,7 @@ func isDataFresh(ctx *internal.AppContext, currentHash string) (bool, error) {
 }
 
 func getApiData(ctx *internal.AppContext) (*types.ApiResponse, string, error) {
-
+	ctx.SqliteCQR.UpdateProperty("LAST_API_REQUEST_TIME", time.Now().UTC().String())
 	endpoint, isSet := os.LookupEnv("BOSYNC_API_ENDPOINT_URL")
 
 	if isSet == false || endpoint == "" {

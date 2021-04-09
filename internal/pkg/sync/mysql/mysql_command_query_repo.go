@@ -3,16 +3,16 @@ package mysql
 import (
 	"backorder_updater/internal/pkg"
 	"backorder_updater/internal/pkg/types"
-	"database/sql"
+	"github.com/jmoiron/sqlx"
 	"log"
 )
 
 type CommandQueryRepository struct {
-	conn                *sql.DB
+	conn                *sqlx.DB
 	insertBackordersSql string
 }
 
-func NewCommandQueryRepository(conn *sql.DB) *CommandQueryRepository {
+func NewCommandQueryRepository(conn *sqlx.DB) *CommandQueryRepository {
 	return &CommandQueryRepository{conn: conn}
 }
 
@@ -28,6 +28,7 @@ func (cq *CommandQueryRepository) UpdateBackOrders(records []types.BackOrder) er
 	}
 
 	stmt, err := tx.Prepare(`REPLACE INTO ActiveBackorders (
+                               updated_at,
                                business_area_no, 
                                area_no, 
                                adm_no, 
@@ -36,7 +37,7 @@ func (cq *CommandQueryRepository) UpdateBackOrders(records []types.BackOrder) er
                                material_no,
                                sale_date, 
                                material_eta_date, 
-                               backorder_qty) VALUES (?,?,?,?,?,?,?,?,?)`)
+                               backorder_qty) VALUES (DEFAULT,?,?,?,?,?,?,?,?,?)`)
 
 	if err != nil {
 		return err

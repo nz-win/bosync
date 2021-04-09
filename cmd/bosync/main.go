@@ -8,10 +8,10 @@ import (
 	"backorder_updater/internal/pkg"
 	"backorder_updater/internal/pkg/logging"
 	"backorder_updater/internal/pkg/sync"
+	"github.com/jmoiron/sqlx"
 	"log"
 
 	"backorder_updater/internal/pkg/sync/mysql"
-	"database/sql"
 	_ "embed"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -37,8 +37,6 @@ func main() {
 		},
 	}
 
-	app.EnableBashCompletion = true
-
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +48,7 @@ func buildContext() *internal.AppContext {
 
 	pkg.CheckAndPanic(err)
 
-	mysqlConn, err := sql.Open("mysql", os.Getenv("BOSYNC_MYSQL_CONN_STR"))
+	mysqlConn, err := sqlx.Open("mysql", os.Getenv("BOSYNC_MYSQL_CONN_STR"))
 
 	pkg.CheckAndPanic(err)
 	mysqlCqr := mysql.NewCommandQueryRepository(mysqlConn)

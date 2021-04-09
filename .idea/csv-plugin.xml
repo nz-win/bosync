@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\cmd\bosync\commands\cmd_info\info.go">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\cmd\bosync\commands\sync\sync.go">
           <value>
             <Attribute>
@@ -70,6 +77,13 @@
           <value>
             <Attribute>
               <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\internal\pkg\sync\sqlite\sqlite_command_query_repo.go">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
             </Attribute>
           </value>
         </entry>

@@ -6,15 +6,12 @@ import (
 	"backorder_updater/internal/pkg/logging"
 	"backorder_updater/internal/pkg/sync"
 	"backorder_updater/internal/pkg/sync/mysql"
-	"database/sql"
+	"github.com/jmoiron/sqlx"
+
 	_ "embed"
 	"log"
 	"os"
 )
-
-//go:embed skeleton.env
-//goland:noinspection GoUnusedGlobalVariable
-var dotEnvDefault string
 
 //go:embed sqlite_init.sql
 //goland:noinspection GoUnusedGlobalVariable
@@ -42,7 +39,7 @@ func main() {
 		pkg.CheckAndLogFatal(sqliteCqr.Close())
 	}()
 
-	mysqlConn, err := sql.Open("mysql", os.Getenv("BOSYNC_MYSQL_CONN_STR"))
+	mysqlConn, err := sqlx.Open("mysql", os.Getenv("BOSYNC_MYSQL_CONN_STR"))
 	pkg.CheckAndPanic(err)
 	defer func() {
 		pkg.CheckAndLogFatal(mysqlConn.Close())

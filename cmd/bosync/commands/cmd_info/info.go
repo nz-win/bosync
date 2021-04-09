@@ -2,6 +2,7 @@ package cmd_info
 
 import (
 	"backorder_updater/cmd/bosync/internal"
+	"backorder_updater/internal/pkg"
 	"backorder_updater/internal/pkg/types"
 	_ "encoding/json"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 type InfoLog struct {
 	LastFreshDataLoadAt time.Time    `json:"last_fresh_data_load" db:"created_at"`
 	LastDataLoadAttempt time.Time    `json:"last_data_load_attempt" db:"last_seen_at"`
+	LastApiRequestAt    string       `json:"last_api_request_at"`
 	LatestLogs          *[]types.Log `json:"latest_logs"`
 }
 
@@ -23,6 +25,11 @@ func NewCommand(ctx *internal.AppContext) *cli.Command {
 		Name:   "info",
 		Usage:  "print various pieces of information about bosync",
 		Action: buildAction(ctx),
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name: "json",
+			},
+		},
 	}
 }
 
@@ -45,6 +52,10 @@ func buildAction(ctx *internal.AppContext) func(c *cli.Context) error {
 
 		i := infoResults[0]
 
+		lastApiRequestTime, err := ctx.SqliteCQR.GetProperty("LAST_API_REQUEST_TIME")
+
+		pkg.CheckAndLogFatal(err)
+
 		err = db.Select(&recentLogs, `SELECT * FROM logs WHERE created_at >= ? ORDER BY created_at DESC LIMIT 10`, i.LastDataLoadAttempt)
 		if err != nil {
 			panic(err)
@@ -56,7 +67,18 @@ func buildAction(ctx *internal.AppContext) func(c *cli.Context) error {
 				i.LastFreshDataLoadAt.In(loc).Format("Mon Jan _2 15:04:05 2006")),
 		)
 
+		fmt.Println(
+			fmt.Sprintf("%s\t-\t%s",
+				colors.Bold(colors.Cyan("Last API Request Time")),
+				lastApiRequestTime),
+		)
+
 		fmt.Println(colors.Bold(colors.Cyan("\nRecent Logs:")))
+
+		if len(recentLogs) == 0 {
+			fmt.Println(colors.Italic(colors.Gray(12,
+				fmt.Sprintf("no new logs as of %s", i.LastDataLoadAttempt.In(loc).Format("Mon Jan _2 15:04:05 2006")))))
+		}
 
 		for _, l := range recentLogs {
 			createdAt := l.CreatedAt.In(loc).Format("Mon Jan _2 15:04:05 2006")

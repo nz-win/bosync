@@ -3,17 +3,17 @@ package sqlite
 import (
 	"backorder_updater/internal/pkg"
 	"backorder_updater/internal/pkg/types"
-	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	sqlite "github.com/mattn/go-sqlite3"
 )
 
 type CommandQueryRepository struct {
-	conn *sql.DB
+	conn *sqlx.DB
 }
 
-func NewCommandQueryRepository(conn *sql.DB) *CommandQueryRepository {
+func NewCommandQueryRepository(conn *sqlx.DB) *CommandQueryRepository {
 	return &CommandQueryRepository{conn: conn}
 }
 
@@ -53,6 +53,36 @@ func (cq *CommandQueryRepository) RecordNewDataLoad(sha256hash string) {
 
 }
 
+func (cq *CommandQueryRepository) UpdateProperty(key string, value string) {
+
+	query := `INSERT INTO properties (id, value) 
+			  VALUES (?,?) 
+			  ON CONFLICT(id) DO UPDATE set value = excluded.value;`
+
+	tx, err := cq.conn.Begin()
+	pkg.CheckAndLogFatal(err)
+
+	stmt, err := tx.Prepare(query)
+	pkg.CheckAndLogFatal(err)
+	defer func() {
+		err = stmt.Close()
+	}()
+
+	var e = &sqlite.Error{}
+
+	if _, err = stmt.Exec(key, value); err != nil && errors.As(err, &e) {
+		switch e.ExtendedCode {
+		case sqlite.ErrConstraintForeignKey:
+
+		}
+	} else {
+
+	}
+	err = tx.Commit()
+	pkg.CheckAndLogFatal(err)
+
+}
+
 func (cq *CommandQueryRepository) GetPreviousDataLoadHash(out *string) error {
 	query, err := cq.getSql("RETRIEVE_LAST_DATALOAD_HASH")
 
@@ -67,6 +97,24 @@ func (cq *CommandQueryRepository) GetPreviousDataLoadHash(out *string) error {
 	}
 
 	return nil
+}
+
+func (cq *CommandQueryRepository) GetProperty(key string) (string, error) {
+	query := `SELECT value FROM properties WHERE id = ? LIMIT 1`
+
+	var result []string
+
+	err := cq.conn.Select(&result, query, key)
+
+	if err != nil {
+		return "", err
+	}
+
+	if len(result) > 0 {
+		return result[0], err
+	}
+
+	return "", nil
 }
 
 func (cq *CommandQueryRepository) getSql(queryName string) (string, error) {
