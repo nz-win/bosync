@@ -27,6 +27,12 @@ func (cq *CommandQueryRepository) UpdateBackOrders(records []types.BackOrder) er
 		return err
 	}
 
+	doDrop, err := tx.Prepare(`DELETE FROM ActiveBackorders;`)
+
+	if err != nil {
+		return err
+	}
+
 	stmt, err := tx.Prepare(`REPLACE INTO ActiveBackorders (
                                updated_at,
                                business_area_no, 
@@ -43,8 +49,17 @@ func (cq *CommandQueryRepository) UpdateBackOrders(records []types.BackOrder) er
 		return err
 	}
 	defer func() {
+		pkg.CheckAndLogFatal(doDrop.Close())
 		pkg.CheckAndLogFatal(stmt.Close())
 	}()
+
+	_, err = doDrop.Exec()
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+		return err
+	}
 
 	for _, b := range records {
 		_, err = stmt.Exec(b.BusinessAreaNo, b.AreaNo, b.AdmNo, b.SalesDoc, b.SoldToParty, b.Material, b.SalesDate.Date, b.MatAvailDate.Date, b.BackorderQty)
